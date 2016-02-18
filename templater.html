@@ -1,0 +1,7 @@
+<template name="Templater">
+    {{#if document}}
+        {{#Template.dynamic template=template data=data}}
+            {{> UI.contentBlock}}
+        {{/Template.dynamic}}
+    {{/if}}
+</template>
