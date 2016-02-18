@@ -15,26 +15,30 @@ if (Meteor.isClient) {
 }
 
 CollectionExtensions.addExtension(function (name, options) {
-    var templates = {};
-    
     var collection = this;
+    
+    collection._templates = {};
     
     // (type: String, template: (document: Object, type: String, collection: Mongo.Collection) => String)
     collection.useTemplate = function(type, template) {
-        if (type in templates) {
-            throw new Meteor.Error('Template with type '+type+' already defined');
+        if (!(type in collection._templates)) {
+            collection._templates[type] = [];
         }
         if (typeof(template) != 'function') {
             throw new Meteor.Error('Template must be a function');
         }
-        templates[type] = template;
+        collection._templates[type].push(template);
     };
     
     collection.helpers({
         
         // (type: String)
         getTemplate: function(type) {
-            return templates[type](this, type, collection);
+            for (var t = collection._templates[type].length - 1; t >= 0; t--) {
+                var result = collection._templates[type][t](this, type, collection);
+                if (result) return result;
+            }
+            throw new Meteor.Error('The template with type '+type+' was not returned for document '+JSON.stringify({ id: this._id, collection: collection._name }));
         }
     });
 });

@@ -29,6 +29,25 @@ var document = collection.findOne();
 document.getTemplate('test'); // "OtherTemplate"
 ```
 
+### Default
+
+If you call the function several times, it will add a few templates.
+Used to be the one that returns the string in order from oldest to new.
+
+```js
+collection.useTemplate('abc', function(document, type, collection) {
+    return '1';
+});
+collection.useTemplate('abc', function(document, type, collection) {
+    if (document._id == '123') return '2';
+});
+collection.useTemplate('abc', function(document, type, collection) {
+    if (document._id == '456') return '3';
+});
+collection.findOne('666').getTemplate('abc'); // "1"
+collection.findOne('456').getTemplate('abc'); // "3"
+```
+
 ### {{>Templater}}
 > document: Document type: String
 
@@ -72,3 +91,6 @@ All arguments available in the template.
 ```
 
 ## Versions
+
+### 0.0.1
+* Added template order array
