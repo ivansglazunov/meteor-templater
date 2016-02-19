@@ -19,24 +19,45 @@ CollectionExtensions.addExtension(function (name, options) {
     
     collection._templates = {};
     
+    // (type: String, template: String)
+    collection.defaultTemplate = function(type, template) {
+        if (!(type in collection._templates)) {
+            collection._templates[type] = {
+                flow: [],
+                default: undefined
+            }
+        }
+        if (typeof(template) != 'string') {
+            throw new Meteor.Error('Template must be a string');
+        }
+        collection._templates[type].default = template;
+    };
+    
     // (type: String, template: (document: Object, type: String, collection: Mongo.Collection) => String)
     collection.useTemplate = function(type, template) {
         if (!(type in collection._templates)) {
-            collection._templates[type] = [];
+            collection._templates[type] = {
+                flow: [],
+                default: undefined
+            }
         }
         if (typeof(template) != 'function') {
             throw new Meteor.Error('Template must be a function');
         }
-        collection._templates[type].push(template);
+        collection._templates[type].flow.push(template);
     };
     
     collection.helpers({
         
         // (type: String)
         getTemplate: function(type) {
-            for (var t = collection._templates[type].length - 1; t >= 0; t--) {
-                var result = collection._templates[type][t](this, type, collection);
-                if (result) return result;
+            if (type in collection._templates) {
+                var context = { result: collection._templates[type].default };
+                for (var t = collection._templates[type].flow.length - 1; t >= 0; t--) {
+                    var result = collection._templates[type].flow[t].call(context, this, type, collection);
+                    if (result) context.result = result;
+                }
+                return context.result;
             }
             throw new Meteor.Error('The template with type '+type+' was not returned for document '+JSON.stringify({ id: this._id, collection: collection._name }));
         }

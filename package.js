@@ -1,6 +1,6 @@
 Package.describe({
   name: 'ivansglazunov:templater',
-  version: '0.0.1',
+  version: '0.0.2',
   summary: 'Link collection some templates.',
   git: 'https://github.com/ivansglazunov/meteor-templater.git',
   documentation: 'README.md'
